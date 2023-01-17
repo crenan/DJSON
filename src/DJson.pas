@@ -786,6 +786,8 @@ end;
 { TJSONReader }
 
 class function TJSONReader.Read(aText: string): IJSONValue;
+var
+  fs: TFormatSettings;
 
   function Tokenize(aSource: string): TStringList;
   var
@@ -867,16 +869,7 @@ class function TJSONReader.Read(aText: string): IJSONValue;
   function ParseToken(const aToken: string): TJSONValue;
   var
     number: Double;
-    fs: TFormatSettings;
   begin
-{$IFNDEF FPC}
-    GetLocaleFormatSettings(SysLocale.DefaultLCID, fs);
-{$ELSE}
-    GetFormatSettings;
-    fs := DefaultFormatSettings;
-{$ENDIF}
-    fs.DecimalSeparator := '.';
-    fs.ThousandSeparator := ',';
     if SameText(LowerCase(aToken), 'null') then Result := TJSONNull.Create
     else if SameText(LowerCase(aToken), 'true') then Result := TJSONBoolean.Create
     else if SameText(LowerCase(aToken), 'false') then Result := TJSONBoolean.Create(false)
@@ -918,6 +911,15 @@ class function TJSONReader.Read(aText: string): IJSONValue;
   end;
 
 begin
+{$IFNDEF FPC}
+  GetLocaleFormatSettings(SysLocale.DefaultLCID, fs);
+{$ELSE}
+  GetFormatSettings;
+  fs := DefaultFormatSettings;
+{$ENDIF}
+  fs.DecimalSeparator := '.';
+  fs.ThousandSeparator := ',';
+
   Result := nil;
   if (Trim(aText) <> '') then
 {$IFDEF FPC}
